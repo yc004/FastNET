@@ -7,6 +7,7 @@ struct NativeMenuContent: View {
     @EnvironmentObject private var store: ProfileStore
     @EnvironmentObject private var network: NetworkController
     @Environment(\.openWindow) private var openWindow
+    @ObservedObject private var dockIcon = DockIconController.shared
 
     private var currentProfiles: [WiFiProfile] {
         store.profiles(for: network.snapshot.ssid)
@@ -48,6 +49,14 @@ struct NativeMenuContent: View {
         }
 
         Toggle("自动切换配置", isOn: $store.autoSwitchEnabled)
+
+        Toggle(
+            "在 Dock 中显示 FastNET",
+            isOn: Binding(
+                get: { dockIcon.isVisible },
+                set: { dockIcon.setVisible($0) }
+            )
+        )
 
         Divider()
 

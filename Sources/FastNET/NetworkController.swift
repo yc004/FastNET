@@ -7,6 +7,11 @@ import SystemSettingsKit
 
 @MainActor
 final class NetworkController: NSObject, ObservableObject, @MainActor CLLocationManagerDelegate {
+    enum ApplySource: Sendable, Equatable {
+        case manual
+        case automatic
+    }
+
     @Published private(set) var snapshot: NetworkSnapshot = .disconnected
     @Published private(set) var applyState: ApplyState = .idle
     @Published private(set) var lastAppliedSSID: String?
@@ -73,6 +78,7 @@ final class NetworkController: NSObject, ObservableObject, @MainActor CLLocation
             let detectedSSIDs = await Self.readKnownSSIDs(interfaceName: next.interfaceName)
             let changed = next.ssid != previousSSID
             snapshot = next
+            StatusItemController.shared.updateIcon(isConnected: next.isConnected)
             availableSSIDs = Array(Set(detectedSSIDs + [next.ssid].compactMap { $0 })).sorted {
                 $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
             }
@@ -80,19 +86,26 @@ final class NetworkController: NSObject, ObservableObject, @MainActor CLLocation
             if changed,
                let profile = store?.automaticProfile(for: next.ssid),
                store?.autoSwitchEnabled == true {
-                apply(profile)
+                apply(profile, source: .automatic)
             }
         }
     }
 
-    func apply(_ profile: WiFiProfile) {
+    func apply(_ profile: WiFiProfile, source: ApplySource = .manual) {
         applyProfileID = profile.id
         lastAppliedProfileID = nil
         guard NetworkValidation.validate(profile) == nil else {
-            applyState = .failure(NetworkValidation.validate(profile) ?? "配置无效")
+            let message = NetworkValidation.validate(profile) ?? "配置无效"
+            applyState = .failure(message)
+            if source == .automatic {
+                AutoSwitchHUDController.shared.showFailure(profile: profile.displayName, message: message)
+            }
             return
         }
         applyState = .applying
+        if source == .automatic {
+            AutoSwitchHUDController.shared.showApplying(profile: profile.displayName, ssid: profile.ssid)
+        }
         let service = snapshot.serviceName
         Task {
             let request = NetworkConfigurationRequest(
@@ -111,10 +124,19 @@ final class NetworkController: NSObject, ObservableObject, @MainActor CLLocation
                 lastAppliedSSID = profile.ssid
                 lastAppliedProfileID = profile.id
                 applyState = .success(Date())
+                if source == .automatic {
+                    AutoSwitchHUDController.shared.showSuccess(profile: profile.displayName, ssid: profile.ssid)
+                }
                 try? await Task.sleep(for: .seconds(1))
                 refresh()
             case .failure(let error):
                 applyState = .failure(error.localizedDescription)
+                if source == .automatic {
+                    AutoSwitchHUDController.shared.showFailure(
+                        profile: profile.displayName,
+                        message: error.localizedDescription
+                    )
+                }
             }
         }
     }

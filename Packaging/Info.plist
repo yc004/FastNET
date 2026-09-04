@@ -19,15 +19,15 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-	<string>1.5.2</string>
+	<string>1.6.4</string>
     <key>CFBundleVersion</key>
-	<string>19</string>
+	<string>24</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.utilities</string>
     <key>LSMinimumSystemVersion</key>
     <string>26.0</string>
-    <key>LSUIElement</key>
-    <true/>
+	<key>LSUIElement</key>
+	<false/>
     <key>NSLocationUsageDescription</key>
     <string>FastNET 需要读取当前 Wi‑Fi 名称，以便自动应用对应的 IP 和 DNS 配置。应用不会读取或保存您的位置。</string>
     <key>NSHumanReadableCopyright</key>

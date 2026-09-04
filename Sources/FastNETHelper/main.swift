@@ -1,8 +1,40 @@
 import Foundation
 import FastNETShared
 import Security
+import Darwin
 
 private final class HelperService: NSObject, FastNETHelperProtocol {
+    fileprivate static func stopLegacyServices() {
+        for label in [
+            "com.fastnet.utility.helper",
+            "com.fastnet.utility.helper.v2",
+            "com.fastnet.utility.helper.v3"
+        ] {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+            process.arguments = ["bootout", "system/\(label)"]
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            do {
+                try process.run()
+                process.waitUntilExit()
+            } catch {
+                continue
+            }
+        }
+    }
+
+    func ping(withReply reply: @escaping (Bool) -> Void) {
+        reply(true)
+    }
+
+    func stopHelper(withReply reply: @escaping () -> Void) {
+        reply()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            exit(EXIT_SUCCESS)
+        }
+    }
+
     func applyConfiguration(
         _ encodedRequest: NSData,
         withReply reply: @escaping (Bool, NSString?) -> Void
@@ -189,6 +221,7 @@ private enum HelperError: LocalizedError {
 
 private let delegate = ListenerDelegate()
 private let listener = NSXPCListener(machServiceName: FastNETHelperConstants.machServiceName)
+HelperService.stopLegacyServices()
 listener.delegate = delegate
 listener.resume()
 RunLoop.current.run()

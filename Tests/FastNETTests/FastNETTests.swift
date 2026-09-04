@@ -143,6 +143,15 @@ import FastNETShared
     #expect(NetworkController.parseDNSServers("There aren't any DNS Servers set on Wi-Fi.\n").isEmpty)
 }
 
+@Test func dockIconIsVisibleByDefaultAndCanBeDisabled() {
+    let suiteName = "FastNETTests.Dock.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    defer { defaults.removePersistentDomain(forName: suiteName) }
+    #expect(DockIconPreference.value(from: defaults))
+    defaults.set(false, forKey: DockIconPreference.key)
+    #expect(!DockIconPreference.value(from: defaults))
+}
+
 @Test func permissionOnboardingReturnsUntilPermissionIsGranted() {
     #expect(PermissionOnboardingPolicy.shouldShow(hasSeenOnboarding: false, authorization: .notDetermined, helperEnabled: false))
     #expect(PermissionOnboardingPolicy.shouldShow(hasSeenOnboarding: true, authorization: .notDetermined, helperEnabled: true))

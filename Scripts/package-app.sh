@@ -30,8 +30,8 @@ swift build \
 
 /usr/bin/ditto "$PRODUCTS_PATH/FastNET" "$APP_PATH/Contents/MacOS/FastNET"
 /usr/bin/ditto "$PRODUCTS_PATH/FastNETHelper" "$APP_PATH/Contents/MacOS/FastNETHelper"
-/usr/bin/ditto "$PROJECT_ROOT/Packaging/com.fastnet.utility.helper.v2.plist" \
-    "$APP_PATH/Contents/Library/LaunchDaemons/com.fastnet.utility.helper.v2.plist"
+/usr/bin/ditto "$PROJECT_ROOT/Packaging/com.fastnet.utility.helper.v4.plist" \
+    "$APP_PATH/Contents/Library/LaunchDaemons/com.fastnet.utility.helper.v4.plist"
 /usr/bin/ditto "$PRODUCTS_PATH/FastNET_FastNET.bundle" "$APP_PATH/Contents/Resources/FastNET_FastNET.bundle"
 /usr/bin/ditto "$PROJECT_ROOT/Packaging/Info.plist" "$APP_PATH/Contents/Info.plist"
 

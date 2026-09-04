@@ -1,8 +1,8 @@
 import Foundation
 
 public enum FastNETHelperConstants {
-    public static let machServiceName = "com.fastnet.utility.helper.v2"
-    public static let plistName = "com.fastnet.utility.helper.v2.plist"
+    public static let machServiceName = "com.fastnet.utility.helper.v4"
+    public static let plistName = "com.fastnet.utility.helper.v4.plist"
 }
 
 public struct NetworkConfigurationRequest: Codable, Sendable {
@@ -44,6 +44,8 @@ public enum DNSList {
 }
 
 @objc public protocol FastNETHelperProtocol: NSObjectProtocol {
+    func ping(withReply reply: @escaping (Bool) -> Void)
+    func stopHelper(withReply reply: @escaping () -> Void)
     func applyConfiguration(
         _ encodedRequest: NSData,
         withReply reply: @escaping (Bool, NSString?) -> Void

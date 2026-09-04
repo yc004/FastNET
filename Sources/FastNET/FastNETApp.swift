@@ -10,7 +10,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
            let icon = NSImage(contentsOf: iconURL) {
             NSApplication.shared.applicationIconImage = icon
         }
-        NSApplication.shared.setActivationPolicy(.accessory)
+        DockIconController.shared.apply()
+        StatusItemController.shared.install()
+        PrivilegeServiceManager.shared.refresh()
         let hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenPermissionOnboarding.v2")
         let authorization = CLLocationManager().authorizationStatus
         if PermissionOnboardingPolicy.shouldShow(
@@ -20,6 +22,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ) {
             showPermissionOnboarding()
         }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        PrivilegeServiceManager.shared.stopHelper()
+    }
+
+    func applicationShouldHandleReopen(
+        _ sender: NSApplication,
+        hasVisibleWindows flag: Bool
+    ) -> Bool {
+        guard !flag else { return true }
+        if let window = sender.windows.first(where: { $0.title == "FastNET 配置" }) {
+            window.makeKeyAndOrderFront(nil)
+        }
+        sender.activate(ignoringOtherApps: true)
+        return true
     }
 
     private func showPermissionOnboarding() {
@@ -58,25 +76,11 @@ struct FastNETApp: App {
         _store = StateObject(wrappedValue: store)
         let network = NetworkController(store: store)
         _network = StateObject(wrappedValue: network)
+        StatusItemController.shared.configure(store: store, network: network)
         Task { @MainActor in network.start() }
     }
 
     var body: some Scene {
-        MenuBarExtra {
-            NativeMenuContent()
-                .environmentObject(store)
-                .environmentObject(network)
-        } label: {
-            Label(
-                "FastNET",
-                systemImage: network.snapshot.isConnected
-                    ? FastNETSymbol.menuBarConnected
-                    : FastNETSymbol.menuBarDisconnected
-            )
-            .symbolEffect(.bounce, value: network.snapshot.ssid)
-        }
-        .menuBarExtraStyle(.menu)
-
         Window("FastNET 配置", id: "profiles") {
             ProfilesWindow()
                 .environmentObject(store)
