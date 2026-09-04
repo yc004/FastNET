@@ -11,7 +11,7 @@ FastNET 是一个轻量的 macOS 菜单栏网络配置切换工具。它按 Wi�
 - 每个 SSID 最多指定一个连接后自动应用的配置
 - 可从当前网络、系统已保存网络和已有配置中选择目标 SSID，也支持手动输入
 - 检测 Wi‑Fi 变化并自动切换
-- 首次启动自动弹出 Wi‑Fi 名称权限引导并触发系统授权；拒绝后可通过 SystemSettingsKit 精确跳转位置服务设置
+- 首次启动以双步骤状态卡引导 Wi‑Fi 名称和后台运行授权；通过 PermissionFlow 的 SystemSettingsKit 精确跳转位置服务及“登录项与扩展”设置
 - 首次启用时由 macOS 批准一次特权辅助服务，之后切换 IP 与 DNS 不再重复要求密码
 - 在权限未授予时会于后续启动继续显示引导，不会因关闭过窗口而永久跳过
 - 菜单栏快速查看当前 IP、配置并手动应用
@@ -38,9 +38,10 @@ swift run FastNET
 
 ```bash
 ./Scripts/package-app.sh
+./Scripts/package-dmg.sh
 ```
 
-打包结果位于 `dist/FastNET.app`。脚本会执行 Release 编译、生成 `AppIcon.icns` 并进行本地 ad-hoc 签名。对外分发时仍需使用 Apple Developer ID 签名和公证。
+打包结果位于 `dist/FastNET.app` 和 `dist/FastNET-<版本>-macOS.dmg`。DMG 使用带“应用程序”快捷方式、拖拽指引和固定图标位置的安装布局。脚本会执行 Release 编译、生成 `AppIcon.icns` 并进行本地 ad-hoc 签名。对外分发时仍需使用 Apple Developer ID 签名和公证。
 
 FastNET 使用 `SMAppService` 管理内置 LaunchDaemon，并通过经过调用方校验的 XPC 接口修改网络设置。首次打开时 macOS 会要求管理员批准这个系统级辅助服务；批准后，手动切换与按 SSID 自动切换均不会再次要求密码。对外分发仍需使用 Apple Developer ID 签名和公证。
 

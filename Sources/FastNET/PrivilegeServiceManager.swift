@@ -2,6 +2,7 @@ import AppKit
 import FastNETShared
 import Foundation
 import ServiceManagement
+import SystemSettingsKit
 
 @MainActor
 final class PrivilegeServiceManager: ObservableObject {
@@ -99,7 +100,7 @@ final class PrivilegeServiceManager: ObservableObject {
     }
 
     func openApprovalSettings() {
-        SMAppService.openSystemSettingsLoginItems()
+        SystemSettings.open(.loginItems)
     }
 
     nonisolated func apply(_ request: NetworkConfigurationRequest) async -> Result<Void, Error> {
