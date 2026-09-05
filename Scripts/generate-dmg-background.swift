@@ -65,26 +65,7 @@ let subtitleAttributes: [NSAttributedString.Key: Any] = [
     .foregroundColor: NSColor(calibratedRed: 0.39, green: 0.45, blue: 0.53, alpha: 1)
 ]
 drawCentered("安装 FastNET", top: 31, attributes: titleAttributes)
-drawCentered("将 FastNET 拖到“应用程序”文件夹", top: 63, attributes: subtitleAttributes)
-
-NSGraphicsContext.saveGraphicsState()
-let shadow = NSShadow()
-shadow.shadowColor = NSColor.systemBlue.withAlphaComponent(0.22)
-shadow.shadowBlurRadius = 5
-shadow.shadowOffset = NSSize(width: 0, height: -1.5)
-shadow.set()
-NSColor.systemBlue.withAlphaComponent(0.82).setStroke()
-let arrow = NSBezierPath()
-arrow.lineWidth = 5
-arrow.lineCapStyle = .round
-arrow.lineJoinStyle = .round
-arrow.move(to: NSPoint(x: 250, y: 155))
-arrow.line(to: NSPoint(x: 350, y: 155))
-arrow.move(to: NSPoint(x: 337, y: 168))
-arrow.line(to: NSPoint(x: 351, y: 155))
-arrow.line(to: NSPoint(x: 337, y: 142))
-arrow.stroke()
-NSGraphicsContext.restoreGraphicsState()
+drawCentered("双击安装包，完成一次管理员授权", top: 63, attributes: subtitleAttributes)
 
 let pill = NSBezierPath(roundedRect: NSRect(x: 173, y: 24, width: 254, height: 30), xRadius: 15, yRadius: 15)
 NSColor.white.withAlphaComponent(0.74).setFill()

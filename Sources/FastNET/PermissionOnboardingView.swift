@@ -74,7 +74,7 @@ struct PermissionOnboardingView: View {
                 VStack(spacing: 7) {
                     Text("让每个 Wi‑Fi 都用对配置")
                         .font(.system(size: 24, weight: .bold))
-                    Text("完成两项系统授权后，FastNET 就能自动工作")
+                    Text("安装器与系统授权准备完成后，FastNET 就能自动工作")
                         .font(.system(size: 14))
                         .foregroundStyle(.secondary)
                 }
@@ -94,8 +94,8 @@ struct PermissionOnboardingView: View {
                 PermissionStepCard(
                     number: 2,
                     symbol: "lock.shield.fill",
-                    title: "允许后台运行",
-                    detail: "启用系统帮助程序，切换 IP 和 DNS 时无需重复输入密码",
+                    title: "系统帮助程序",
+                    detail: "由安装器一次性安装，切换 IP 和 DNS 时无需重复输入密码",
                     isComplete: privilege.isReady,
                     status: backgroundStatus
                 )
@@ -126,30 +126,26 @@ struct PermissionOnboardingView: View {
                     }
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.secondary)
-                } else if privilege.status == .requiresApproval {
-                    Text("在“允许在后台”列表中找到 FastNET，然后打开右侧开关")
-                        .font(.system(size: 12))
+                } else {
+                    Label(
+                        privilege.lastError ?? "正在检测系统帮助程序",
+                        systemImage: privilege.isChecking ? "hourglass" : "exclamationmark.triangle.fill"
+                    )
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(privilege.isChecking ? Color.secondary : Color.orange)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 390)
+                    if !privilege.isChecking {
+                        Button("重新检测帮助程序") {
+                            privilege.requestAuthorization()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                    }
+                    Text("如果仍无法检测，请退出 FastNET 并重新运行安装器")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                    Button("打开“登录项与扩展”") {
-                        privilege.openApprovalSettings()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                } else {
-                    Button("重新请求后台运行权限") {
-                        privilege.requestAuthorization()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                }
-
-                if let error = privilege.lastError {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
                 }
 
                 Button("暂时关闭", action: onFinish)
@@ -169,7 +165,15 @@ struct PermissionOnboardingView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             permission.refresh()
-            privilege.refresh()
+            privilege.reconcileAuthorization()
+        }
+        .task {
+            while !Task.isCancelled && !privilege.isReady {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { return }
+                permission.refresh()
+                privilege.reconcileAuthorization()
+            }
         }
     }
 
@@ -180,10 +184,10 @@ struct PermissionOnboardingView: View {
     }
 
     private var backgroundStatus: String {
-        if privilege.isReady { return "已允许" }
-        if privilege.status == .requiresApproval { return "等待开启后台开关" }
-        if privilege.lastError != nil { return "请求失败，请重试" }
-        return "正在准备系统帮助程序"
+        if privilege.isReady { return "已安装并运行" }
+        if privilege.isChecking { return "正在检测" }
+        if privilege.isHelperInstalled { return "需要重新安装" }
+        return "尚未安装"
     }
 }
 

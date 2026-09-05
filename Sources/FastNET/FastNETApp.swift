@@ -12,20 +12,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         DockIconController.shared.apply()
         StatusItemController.shared.install()
-        PrivilegeServiceManager.shared.refresh()
-        let hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenPermissionOnboarding.v2")
-        let authorization = CLLocationManager().authorizationStatus
-        if PermissionOnboardingPolicy.shouldShow(
-            hasSeenOnboarding: hasSeenOnboarding,
-            authorization: authorization,
-            helperEnabled: PrivilegeServiceManager.shared.isReady
-        ) {
-            showPermissionOnboarding()
+        Task { @MainActor [weak self] in
+            await PrivilegeServiceManager.shared.prepareForLaunch()
+            let hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenPermissionOnboarding.v2")
+            let authorization = CLLocationManager().authorizationStatus
+            if PermissionOnboardingPolicy.shouldShow(
+                hasSeenOnboarding: hasSeenOnboarding,
+                authorization: authorization,
+                helperEnabled: PrivilegeServiceManager.shared.isReady
+            ) {
+                self?.showPermissionOnboarding()
+            }
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         PrivilegeServiceManager.shared.stopHelper()
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 
     func applicationShouldHandleReopen(

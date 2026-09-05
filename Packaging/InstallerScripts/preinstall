@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+set -u
+
+/usr/bin/pkill -x FastNET 2>/dev/null || true
+/bin/launchctl bootout system/com.fastnet.utility.installer.helper 2>/dev/null || true
+/bin/rm -rf /Applications/FastNET.app
+
+exit 0

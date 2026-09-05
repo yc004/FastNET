@@ -4,6 +4,7 @@ set -euo pipefail
 PROJECT_ROOT="${0:A:h:h}"
 APP_PATH="$PROJECT_ROOT/dist/FastNET.app"
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_ROOT/Packaging/Info.plist")
+PKG_PATH="$PROJECT_ROOT/dist/Install-FastNET-$VERSION.pkg"
 DMG_PATH="$PROJECT_ROOT/dist/FastNET-$VERSION-macOS.dmg"
 BACKGROUND_BUILD="$PROJECT_ROOT/.build/dmg-background.png"
 VOLUME_NAME="FastNET"
@@ -11,6 +12,19 @@ STAGING_DIR=$(/usr/bin/mktemp -d "/private/tmp/fastnet-dmg-staging.XXXXXX")
 WRITABLE_DMG="/private/tmp/FastNET-$VERSION-writable.dmg"
 MOUNT_DIR=""
 DEVICE=""
+DEVELOPER_ROOT="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}"
+SIGNING_IDENTITY="${FASTNET_CODESIGN_IDENTITY:--}"
+INSTALLER_IDENTITY="${FASTNET_INSTALLER_IDENTITY:-}"
+NOTARY_PROFILE="${FASTNET_NOTARY_PROFILE:-}"
+
+if [[ "$SIGNING_IDENTITY" != "-" && ( -z "$INSTALLER_IDENTITY" || -z "$NOTARY_PROFILE" ) ]]; then
+    print -u2 "FASTNET_INSTALLER_IDENTITY and FASTNET_NOTARY_PROFILE are required for a Developer ID release."
+    exit 1
+fi
+if [[ "$SIGNING_IDENTITY" == "-" && -n "$NOTARY_PROFILE" ]]; then
+    print -u2 "FASTNET_CODESIGN_IDENTITY is required when FASTNET_NOTARY_PROFILE is set."
+    exit 1
+fi
 
 cleanup() {
     if [[ -n "$DEVICE" ]]; then
@@ -21,15 +35,14 @@ cleanup() {
 }
 trap cleanup EXIT
 
-"$PROJECT_ROOT/Scripts/package-app.sh"
+"$PROJECT_ROOT/Scripts/package-installer.sh"
 
 /bin/mkdir -p "$PROJECT_ROOT/.build" "$STAGING_DIR/.background"
 DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}" \
 CLANG_MODULE_CACHE_PATH="/private/tmp/fastnet-dmg-clang-cache" \
 /usr/bin/xcrun swift "$PROJECT_ROOT/Scripts/generate-dmg-background.swift" "$BACKGROUND_BUILD"
 
-/usr/bin/ditto "$APP_PATH" "$STAGING_DIR/FastNET.app"
-/bin/ln -s /Applications "$STAGING_DIR/Applications"
+/usr/bin/ditto "$PKG_PATH" "$STAGING_DIR/安装 FastNET.pkg"
 /usr/bin/ditto "$BACKGROUND_BUILD" "$STAGING_DIR/.background/FastNET-DMG-Background.png"
 /usr/bin/ditto "$APP_PATH/Contents/Resources/AppIcon.icns" "$STAGING_DIR/.VolumeIcon.icns"
 
@@ -47,7 +60,7 @@ ATTACH_OUTPUT=$(/usr/bin/hdiutil attach \
     -noverify \
     -noautoopen)
 DEVICE=$(print -r -- "$ATTACH_OUTPUT" | /usr/bin/awk 'NR == 1 { print $1 }')
-MOUNT_DIR=$(print -r -- "$ATTACH_OUTPUT" | /usr/bin/awk '/\/Volumes\// { print $NF }' | /usr/bin/tail -1)
+MOUNT_DIR=$(print -r -- "$ATTACH_OUTPUT" | /usr/bin/awk 'match($0, /\/Volumes\//) { print substr($0, RSTART) }' | /usr/bin/tail -1)
 if [[ -z "$DEVICE" || -z "$MOUNT_DIR" ]]; then
     print -u2 "Unable to determine mounted disk path"
     exit 1
@@ -68,8 +81,7 @@ tell application "Finder"
         set icon size of icon view options of container window to 104
         set text size of icon view options of container window to 13
         set background picture of icon view options of container window to file ".background:FastNET-DMG-Background.png"
-        set position of item "FastNET.app" of container window to {170, 205}
-        set position of item "Applications" of container window to {430, 205}
+        set position of item "安装 FastNET.pkg" of container window to {300, 205}
         close
         open
         update without registering applications
@@ -89,6 +101,14 @@ fi
 /usr/bin/hdiutil detach "$DEVICE" -quiet
 DEVICE=""
 /usr/bin/hdiutil convert "$WRITABLE_DMG" -format UDZO -imagekey zlib-level=9 -o "$DMG_PATH" >/dev/null
+if [[ "$SIGNING_IDENTITY" != "-" ]]; then
+    /usr/bin/codesign --force --timestamp --sign "$SIGNING_IDENTITY" "$DMG_PATH"
+    DEVELOPER_DIR="$DEVELOPER_ROOT" /usr/bin/xcrun notarytool submit "$DMG_PATH" \
+        --keychain-profile "$NOTARY_PROFILE" \
+        --wait
+    DEVELOPER_DIR="$DEVELOPER_ROOT" /usr/bin/xcrun stapler staple "$DMG_PATH"
+    DEVELOPER_DIR="$DEVELOPER_ROOT" /usr/bin/xcrun stapler validate "$DMG_PATH"
+fi
 /usr/bin/hdiutil verify "$DMG_PATH"
 /usr/bin/shasum -a 256 "$DMG_PATH"
 

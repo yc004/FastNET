@@ -8,7 +8,9 @@ private final class HelperService: NSObject, FastNETHelperProtocol {
         for label in [
             "com.fastnet.utility.helper",
             "com.fastnet.utility.helper.v2",
-            "com.fastnet.utility.helper.v3"
+            "com.fastnet.utility.helper.v3",
+            "com.fastnet.utility.helper.v4",
+            "com.fastnet.utility.helper.v5"
         ] {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
@@ -179,20 +181,27 @@ private enum ClientValidator {
               values[kSecCodeInfoIdentifier as String] as? String == "com.fastnet.utility",
               let executable = values[kSecCodeInfoMainExecutable as String] as? URL else { return false }
 
-        guard let helperURL = ownExecutableURL() else { return false }
-        let expectedApp = helperURL.deletingLastPathComponent().appendingPathComponent("FastNET").standardizedFileURL
+        let expectedApp = URL(
+            fileURLWithPath: "/Applications/FastNET.app/Contents/MacOS/FastNET"
+        ).standardizedFileURL
         guard executable.standardizedFileURL == expectedApp else { return false }
 
+        let requirementText: String
+        if let teamIdentifier = ownTeamIdentifier() {
+            requirementText = "anchor apple generic and identifier \"com.fastnet.utility\" and certificate leaf[subject.OU] = \"\(teamIdentifier)\""
+        } else {
+            requirementText = "identifier \"com.fastnet.utility\""
+        }
         var requirement: SecRequirement?
         guard SecRequirementCreateWithString(
-            "identifier \"com.fastnet.utility\"" as CFString,
+            requirementText as CFString,
             [],
             &requirement
         ) == errSecSuccess, let requirement else { return false }
         return SecCodeCheckValidity(guest, [], requirement) == errSecSuccess
     }
 
-    private static func ownExecutableURL() -> URL? {
+    private static func ownTeamIdentifier() -> String? {
         var ownCode: SecCode?
         var ownStaticCode: SecStaticCode?
         var information: CFDictionary?
@@ -201,9 +210,8 @@ private enum ClientValidator {
               SecCodeCopyStaticCode(ownCode, [], &ownStaticCode) == errSecSuccess,
               let ownStaticCode,
               SecCodeCopySigningInformation(ownStaticCode, [], &information) == errSecSuccess,
-              let values = information as? [String: Any],
-              let executable = values[kSecCodeInfoMainExecutable as String] as? URL else { return nil }
-        return executable.standardizedFileURL
+              let values = information as? [String: Any] else { return nil }
+        return values[kSecCodeInfoTeamIdentifier as String] as? String
     }
 }
 

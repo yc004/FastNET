@@ -6,6 +6,7 @@ APP_PATH="$PROJECT_ROOT/dist/FastNET.app"
 PRODUCTS_PATH="$PROJECT_ROOT/.build/out/Products/Release"
 ASSET_OUTPUT="$PROJECT_ROOT/.build/app-icon-output"
 DEVELOPER_ROOT="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}"
+SIGNING_IDENTITY="${FASTNET_CODESIGN_IDENTITY:--}"
 
 if [[ "$APP_PATH" != "$PROJECT_ROOT/dist/FastNET.app" ]]; then
     print -u2 "Refusing to package an unexpected path: $APP_PATH"
@@ -24,14 +25,10 @@ swift build \
 /bin/rm -rf "$APP_PATH" "$ASSET_OUTPUT"
 /bin/mkdir -p \
     "$APP_PATH/Contents/MacOS" \
-    "$APP_PATH/Contents/Library/LaunchDaemons" \
     "$APP_PATH/Contents/Resources" \
     "$ASSET_OUTPUT"
 
 /usr/bin/ditto "$PRODUCTS_PATH/FastNET" "$APP_PATH/Contents/MacOS/FastNET"
-/usr/bin/ditto "$PRODUCTS_PATH/FastNETHelper" "$APP_PATH/Contents/MacOS/FastNETHelper"
-/usr/bin/ditto "$PROJECT_ROOT/Packaging/com.fastnet.utility.helper.v4.plist" \
-    "$APP_PATH/Contents/Library/LaunchDaemons/com.fastnet.utility.helper.v4.plist"
 /usr/bin/ditto "$PRODUCTS_PATH/FastNET_FastNET.bundle" "$APP_PATH/Contents/Resources/FastNET_FastNET.bundle"
 /usr/bin/ditto "$PROJECT_ROOT/Packaging/Info.plist" "$APP_PATH/Contents/Info.plist"
 
@@ -48,6 +45,18 @@ DEVELOPER_DIR="$DEVELOPER_ROOT" /usr/bin/xcrun actool \
     --output-partial-info-plist "$ASSET_OUTPUT/asset-info.plist"
 
 /usr/bin/ditto "$ASSET_OUTPUT/AppIcon.icns" "$APP_PATH/Contents/Resources/AppIcon.icns"
-/usr/bin/codesign --force --deep --sign - --identifier com.fastnet.utility "$APP_PATH"
+if [[ "$SIGNING_IDENTITY" == "-" ]]; then
+    print -u2 "Warning: creating an ad-hoc signed local development build."
+    /usr/bin/codesign --force --sign - \
+        --identifier com.fastnet.utility \
+        "$APP_PATH"
+else
+    /usr/bin/codesign --force --options runtime --timestamp \
+        --sign "$SIGNING_IDENTITY" \
+        --identifier com.fastnet.utility \
+        "$APP_PATH"
+fi
+
+/usr/bin/codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
 print "Packaged: $APP_PATH"

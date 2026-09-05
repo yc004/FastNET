@@ -1,0 +1,24 @@
+#!/bin/zsh
+
+set -u
+
+HELPER="/Library/PrivilegedHelperTools/com.fastnet.utility.installer.helper"
+PLIST="/Library/LaunchDaemons/com.fastnet.utility.installer.helper.plist"
+
+/usr/sbin/chown root:wheel "$HELPER" "$PLIST"
+/bin/chmod 755 "$HELPER"
+/bin/chmod 644 "$PLIST"
+
+for label in \
+    com.fastnet.utility.helper \
+    com.fastnet.utility.helper.v2 \
+    com.fastnet.utility.helper.v3 \
+    com.fastnet.utility.helper.v4 \
+    com.fastnet.utility.helper.v5; do
+    /bin/launchctl bootout "system/$label" 2>/dev/null || true
+done
+
+/bin/launchctl bootstrap system "$PLIST"
+/bin/launchctl enable system/com.fastnet.utility.installer.helper
+
+exit 0

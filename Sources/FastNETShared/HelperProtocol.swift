@@ -1,8 +1,10 @@
 import Foundation
 
 public enum FastNETHelperConstants {
-    public static let machServiceName = "com.fastnet.utility.helper.v4"
-    public static let plistName = "com.fastnet.utility.helper.v4.plist"
+    public static let machServiceName = "com.fastnet.utility.installer.helper"
+    public static let executableName = "com.fastnet.utility.installer.helper"
+    public static let installedExecutablePath = "/Library/PrivilegedHelperTools/com.fastnet.utility.installer.helper"
+    public static let installedPlistPath = "/Library/LaunchDaemons/com.fastnet.utility.installer.helper.plist"
 }
 
 public struct NetworkConfigurationRequest: Codable, Sendable {

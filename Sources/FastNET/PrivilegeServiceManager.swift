@@ -1,113 +1,80 @@
-import AppKit
 import FastNETShared
 import Foundation
-import ServiceManagement
-import SystemSettingsKit
 
 @MainActor
 final class PrivilegeServiceManager: ObservableObject {
     static let shared = PrivilegeServiceManager()
 
-    @Published private(set) var status: SMAppService.Status
     @Published private(set) var lastError: String?
     @Published private(set) var isHelperRunning = false
+    @Published private(set) var isChecking = false
 
-    private let service = SMAppService.daemon(plistName: FastNETHelperConstants.plistName)
+    private var checkTask: Task<Void, Never>?
 
-    private init() {
-        status = service.status
+    private init() {}
+
+    var isEnabled: Bool { isHelperRunning }
+    var isReady: Bool { isHelperRunning }
+    var isHelperInstalled: Bool {
+        FileManager.default.isExecutableFile(atPath: FastNETHelperConstants.installedExecutablePath)
+            && FileManager.default.fileExists(atPath: FastNETHelperConstants.installedPlistPath)
     }
 
-    var isEnabled: Bool { status == .enabled }
-    var isReady: Bool { isEnabled }
-
     func refresh() {
-        status = service.status
-        if status == .enabled {
-            startHelper()
-        } else {
-            isHelperRunning = false
-        }
+        startHelper()
     }
 
     func requestAuthorization() {
         lastError = nil
-        registerCurrentBuild()
+        startHelper()
     }
 
-    private func registerCurrentBuild() {
-        do {
-            try service.register()
-        } catch let error as NSError where error.code == kSMErrorAlreadyRegistered {
-            // Registration is persistent; refresh the current user-approval state.
-        } catch {
-            lastError = error.localizedDescription
-        }
-        refresh()
-        if status == .requiresApproval {
-            lastError = nil
-        } else if status == .enabled {
-            startHelper()
+    func reconcileAuthorization() {
+        startHelper()
+    }
+
+    func prepareForLaunch() async {
+        isChecking = true
+        let success = await HelperXPCTransport.ping(timeout: 2)
+        isHelperRunning = success
+        isChecking = false
+        if !success {
+            lastError = isHelperInstalled
+                ? "系统帮助程序未能启动，请重新运行 FastNET 安装器"
+                : "尚未安装系统帮助程序，请运行 FastNET 安装器"
         }
     }
 
     func startHelper() {
-        guard status == .enabled else { return }
-        let connection = makeConnection()
-        let proxy = connection.remoteObjectProxyWithErrorHandler { [weak self] _ in
-            connection.invalidate()
-            Task { @MainActor in self?.isHelperRunning = false }
-        } as? FastNETHelperProtocol
-        guard let proxy else {
-            connection.invalidate()
-            isHelperRunning = false
-            return
-        }
-        connection.resume()
-        proxy.ping { [weak self] success in
-            connection.invalidate()
-            Task { @MainActor in self?.isHelperRunning = success }
+        guard checkTask == nil else { return }
+        isChecking = true
+        checkTask = Task { [weak self] in
+            guard let self else { return }
+            let success = await HelperXPCTransport.ping(timeout: 2)
+            self.isHelperRunning = success
+            self.isChecking = false
+            if success {
+                self.lastError = nil
+            } else {
+                self.lastError = self.isHelperInstalled
+                    ? "系统帮助程序未能启动，请重新运行 FastNET 安装器"
+                    : "尚未安装系统帮助程序，请运行 FastNET 安装器"
+            }
+            self.checkTask = nil
         }
     }
 
     func stopHelper() {
-        guard status == .enabled else { return }
-        let connection = makeConnection()
-        let proxy = connection.remoteObjectProxyWithErrorHandler { _ in
-            connection.invalidate()
-        } as? FastNETHelperProtocol
-        guard let proxy else {
-            connection.invalidate()
-            return
-        }
-        connection.resume()
-        let acknowledgement = DispatchSemaphore(value: 0)
-        proxy.stopHelper {
-            acknowledgement.signal()
-        }
-        _ = acknowledgement.wait(timeout: .now() + 1)
-        connection.invalidate()
+        guard isHelperRunning else { return }
+        HelperXPCTransport.stop(timeout: 1)
         isHelperRunning = false
-    }
-
-    private nonisolated func makeConnection() -> NSXPCConnection {
-        let connection = NSXPCConnection(
-            machServiceName: FastNETHelperConstants.machServiceName,
-            options: .privileged
-        )
-        connection.remoteObjectInterface = NSXPCInterface(with: FastNETHelperProtocol.self)
-        return connection
-    }
-
-    func openApprovalSettings() {
-        SystemSettings.open(.loginItems)
     }
 
     nonisolated func apply(_ request: NetworkConfigurationRequest) async -> Result<Void, Error> {
         do {
             let data = try JSONEncoder().encode(request)
             return await withCheckedContinuation { continuation in
-                let connection = makeConnection()
+                let connection = HelperXPCTransport.makeConnection()
                 let gate = XPCApplyCompletionGate(
                     connection: connection,
                     continuation: continuation
@@ -138,6 +105,69 @@ final class PrivilegeServiceManager: ObservableObject {
             }
         } catch {
             return .failure(error)
+        }
+    }
+}
+
+/// XPC invokes reply and error blocks on its private queues. Keeping those
+/// blocks outside the main-actor manager prevents Swift executor assertions.
+private enum HelperXPCTransport {
+    nonisolated static func makeConnection() -> NSXPCConnection {
+        let connection = NSXPCConnection(
+            machServiceName: FastNETHelperConstants.machServiceName,
+            options: .privileged
+        )
+        connection.remoteObjectInterface = NSXPCInterface(with: FastNETHelperProtocol.self)
+        return connection
+    }
+
+    nonisolated static func ping(timeout: TimeInterval) async -> Bool {
+        await withCheckedContinuation { continuation in
+            ping(timeout: timeout) { success in
+                continuation.resume(returning: success)
+            }
+        }
+    }
+
+    nonisolated static func ping(
+        timeout: TimeInterval,
+        completion: @escaping @Sendable (Bool) -> Void
+    ) {
+        let connection = makeConnection()
+        let gate = XPCValueCompletionGate(connection: connection, completion: completion)
+        connection.interruptionHandler = { gate.finish(false) }
+        let proxy = connection.remoteObjectProxyWithErrorHandler { _ in
+            gate.finish(false)
+        } as? FastNETHelperProtocol
+        guard let proxy else {
+            gate.finish(false)
+            return
+        }
+        connection.resume()
+        proxy.ping { success in gate.finish(success) }
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + timeout) {
+            gate.finish(false)
+        }
+    }
+
+    nonisolated static func stop(timeout: TimeInterval) {
+        let connection = makeConnection()
+        let acknowledgement = DispatchSemaphore(value: 0)
+        let gate = XPCValueCompletionGate<Void>(connection: connection) { _ in
+            acknowledgement.signal()
+        }
+        connection.interruptionHandler = { gate.finish(()) }
+        let proxy = connection.remoteObjectProxyWithErrorHandler { _ in
+            gate.finish(())
+        } as? FastNETHelperProtocol
+        guard let proxy else {
+            gate.finish(())
+            return
+        }
+        connection.resume()
+        proxy.stopHelper { gate.finish(()) }
+        if acknowledgement.wait(timeout: .now() + timeout) == .timedOut {
+            gate.finish(())
         }
     }
 }
@@ -180,5 +210,32 @@ private final class XPCApplyCompletionGate: @unchecked Sendable {
         lock.unlock()
         connection.invalidate()
         continuation.resume(returning: result)
+    }
+}
+
+private final class XPCValueCompletionGate<Value: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var hasFinished = false
+    private let connection: NSXPCConnection
+    private let completion: @Sendable (Value) -> Void
+
+    init(
+        connection: NSXPCConnection,
+        completion: @escaping @Sendable (Value) -> Void
+    ) {
+        self.connection = connection
+        self.completion = completion
+    }
+
+    func finish(_ value: Value) {
+        lock.lock()
+        guard !hasFinished else {
+            lock.unlock()
+            return
+        }
+        hasFinished = true
+        lock.unlock()
+        connection.invalidate()
+        completion(value)
     }
 }
