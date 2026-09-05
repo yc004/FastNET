@@ -1,40 +1,154 @@
-# FastNET
+<div align="center">
+  <img src="Sources/FastNET/Resources/FastNET-AppIcon-Master.png" width="112" alt="FastNET 图标">
 
-FastNET 是一个轻量的 macOS 菜单栏网络配置切换工具。它按 Wi‑Fi 名称（SSID）保存 IPv4 与 DNS 配置，并在网络变化时自动应用对应配置。
+  # FastNET
 
-## 功能
+  **让每个 Wi‑Fi，都自动使用正确的网络配置。**
 
-- 为每个 Wi‑Fi 保存独立的 DHCP 或静态 IPv4 配置
-- 为每个 Wi‑Fi 保存独立 DNS 服务器
-- 可选择在手动 DNS 后附加路由器通过 DHCP 提供的默认 DNS，并自动去重
-- 一个 SSID 可保存多个带备注的配置，并从菜单中手动切换
-- 每个 SSID 最多指定一个连接后自动应用的配置
-- 可从当前网络、系统已保存网络和已有配置中选择目标 SSID，也支持手动输入
-- 检测 Wi‑Fi 变化并自动切换
-- 首次启动以双步骤状态卡检查 Wi‑Fi 名称权限和安装器部署的系统帮助程序；通过 PermissionFlow 的 SystemSettingsKit 精确跳转位置服务
-- PKG 安装时由 macOS 原生安装器完成一次管理员授权，之后切换 IP 与 DNS 不再重复要求密码
-- 在权限未授予时会于后续启动继续显示引导，不会因关闭过窗口而永久跳过
-- 菜单栏快速查看当前 IP、配置并手动应用
-- 配置窗口顶部直观显示当前 SSID、IPv4、子网掩码、路由器、DNS、网络服务和配置方式
-- 使用类似“备忘录”的原生三栏布局：网络名称、配置文件、配置详细信息
-- 配置文件栏实时标识“正在应用”“当前应用”和“应用失败”状态
-- 自动切换时从菜单栏图标弹出原生 Liquid Glass 消息气泡，提示进度、成功或失败状态
-- 使用系统原生菜单栏菜单，支持标准高亮、键盘操作和自动明暗模式
-- 使用克制的原生状态动效，并自动遵循系统“减少动态效果”设置
-- 默认在 Dock 中显示应用图标，可从菜单栏随时隐藏或恢复
-- 启动时检查并唤醒已授权的帮助程序，退出 FastNET 时同步停止帮助程序进程
-- 原生 SwiftUI 界面，不依赖第三方运行时
-- 完整 macOS 应用图标尺寸与统一 SF Symbols 视觉规范
+  一款为 macOS 打造的轻量网络配置切换工具。告别在家庭、公司和实验室之间反复修改 IP 与 DNS。
 
-## 运行
+  [![macOS 26+](https://img.shields.io/badge/macOS-26%2B-111111?logo=apple&logoColor=white)](https://github.com/yc004/FastNET/releases/latest)
+  [![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)](Package.swift)
+  [![Release](https://img.shields.io/github/v/release/yc004/FastNET?display_name=tag&sort=semver)](https://github.com/yc004/FastNET/releases/latest)
 
-需要 macOS 26 或更高版本，以及完整安装的新版 Xcode。开发时可用 Xcode 打开 `Package.swift`。涉及实际网络配置切换时，请运行打包后的 `.app`，因为免密码辅助服务必须位于应用包中。
+  [下载最新版](https://github.com/yc004/FastNET/releases/latest) · [查看功能](#核心体验) · [开发与构建](#开发与构建)
+</div>
 
-```bash
-swift run FastNET
+---
+
+## 为什么需要 FastNET？
+
+macOS 的静态 IPv4 和 DNS 设置绑定在网络服务上，而不是每一个 Wi‑Fi。你在公司设置的固定 IP，连接家庭 Wi‑Fi 后仍可能继续生效；下一次换网络，又要重新打开系统设置逐项修改。
+
+FastNET 根据当前 Wi‑Fi 名称匹配配置文件，在网络变化时自动应用正确的 DHCP、静态 IPv4 和 DNS 设置。配置一次，之后安静地工作。
+
+## 界面预览
+
+<div align="center">
+  <img src="Documentation/Images/configuration-window.png" width="960" alt="FastNET 三栏配置界面">
+  <p><sub>原生三栏布局：网络、配置文件与配置详情一目了然</sub></p>
+</div>
+
+主窗口采用类似 macOS“备忘录”的原生三栏布局：左侧选择网络，中间选择配置文件，右侧查看和编辑详细参数。菜单栏则提供当前网络状态与常用操作，无需一直打开主窗口。
+
+<table>
+  <tr>
+    <td align="center" width="58%">
+      <img src="Documentation/Images/permission-onboarding.png" width="460" alt="FastNET 首次启动授权引导"><br>
+      <sub>首次启动时集中完成必要授权</sub>
+    </td>
+    <td align="center" width="42%">
+      <img src="Documentation/Images/menu-bar-notification.png" width="325" alt="FastNET 菜单栏自动切换通知"><br>
+      <sub>自动切换时，从菜单栏图标弹出轻量提示</sub>
+    </td>
+  </tr>
+</table>
+
+## 核心体验
+
+| | 功能 | 体验 |
+|---|---|---|
+| 📡 | **按 Wi‑Fi 自动切换** | 连接到指定 SSID 后，自动应用对应配置 |
+| 🌐 | **DHCP 与静态 IPv4** | 保存 IP 地址、子网掩码和路由器设置 |
+| 🧭 | **独立 DNS** | 为不同网络设置不同 DNS，并可在手动 DNS 后附加默认 DNS |
+| 🗂️ | **一个 SSID，多套配置** | 同一网络可保存开发、测试、备用 DNS 等多个带备注配置 |
+| ⚡ | **菜单栏快速操作** | 查看当前 IP、手动应用配置、控制自动切换和 Dock 图标 |
+| ✅ | **清晰的应用状态** | 实时展示正在应用、当前应用、应用成功或失败 |
+| ✨ | **原生 macOS 设计** | SwiftUI 三栏布局、SF Symbols、Liquid Glass 气泡与系统动效 |
+| 🔐 | **一次安装，免重复密码** | 安装时完成一次管理员授权，之后切换 IP 与 DNS 无需重复输入 |
+
+### 为同一个 Wi‑Fi 保存多种方案
+
+每个 SSID 可以拥有多个配置文件，但只有一个配置会在连接后自动应用。其他配置保留在中栏和菜单栏中，随时手动切换。例如：
+
+- `公司 Wi‑Fi · 开发环境`
+- `公司 Wi‑Fi · 测试网段`
+- `公司 Wi‑Fi · DHCP`
+- `家庭 Wi‑Fi · 公共 DNS`
+
+## 安装
+
+### 系统要求
+
+- macOS 26 或更高版本
+- Apple Silicon Mac
+- 管理员账户或可用的管理员凭据
+
+### 安装步骤
+
+1. 从 [Releases](https://github.com/yc004/FastNET/releases/latest) 下载 `FastNET-<版本>-macOS.dmg`。
+2. 打开 DMG，双击 **安装 FastNET.pkg**。
+3. 按照 macOS 原生安装器提示，完成一次管理员授权。
+4. 从“应用程序”文件夹打开 FastNET，并允许读取 Wi‑Fi 名称。
+5. 新建配置并选择目标 SSID；需要自动切换时，打开“连接此 Wi‑Fi 时自动应用”。
+
+## 它如何工作
+
+```mermaid
+flowchart LR
+    A["Wi‑Fi 发生变化"] --> B["读取当前 SSID"]
+    B --> C["匹配自动配置"]
+    C --> D["通过受限 XPC 请求"]
+    D --> E["系统帮助程序"]
+    E --> F["应用 IPv4 与 DNS"]
+    F --> G["显示成功或失败反馈"]
 ```
 
-## 打包安装器
+FastNET 的 PKG 安装器会把一个最小化的帮助程序安装到 `/Library/PrivilegedHelperTools`，并由 `launchd` 按需启动。主应用退出时帮助程序随之停止；下次启动 FastNET 时会自动重新唤醒。
+
+帮助程序只接受预定义的网络配置请求，并执行以下操作：
+
+- 切换 DHCP 或静态 IPv4
+- 设置子网掩码和路由器
+- 设置或清空 DNS 服务器
+- 读取 DHCP 提供的默认 DNS
+
+## 隐私与安全
+
+- 所有网络配置仅保存在本机 `UserDefaults` 中。
+- FastNET 不创建账户、不上传配置，也不包含遥测服务。
+- 位置权限只用于通过 CoreWLAN 读取当前 SSID，不读取定位坐标。
+- 网络修改由独立的最小权限帮助程序执行，主界面不会以 root 身份运行。
+- 安装脚本会设置明确的 `root:wheel` 属主和文件权限。
+- 旧版帮助程序会在升级安装时停止，避免多个服务同时修改网络。
+
+## 常见问题
+
+<details>
+<summary><strong>为什么读取 Wi‑Fi 名称需要位置权限？</strong></summary>
+
+macOS 要求应用获得位置服务授权后，CoreWLAN 才会返回当前 Wi‑Fi 名称。FastNET 只读取 SSID，用于查找对应配置，不读取或保存位置坐标。
+</details>
+
+<details>
+<summary><strong>为什么安装时需要管理员授权？</strong></summary>
+
+修改系统网络设置需要增强权限。安装器会一次性部署一个功能受限的系统帮助程序，因此日常自动切换不需要反复输入密码。
+</details>
+
+<details>
+<summary><strong>为什么“允许在后台”里没有 FastNET？</strong></summary>
+
+1.7.0 起采用一次性 PKG 安装模式，不再通过 `SMAppService` 注册后台项目。帮助程序由安装器部署，并由 `launchd` 按需运行，因此不依赖该设置页面的开关。
+</details>
+
+<details>
+<summary><strong>退出 FastNET 后帮助程序还会运行吗？</strong></summary>
+
+不会。正常退出 FastNET 时会通知帮助程序结束进程；LaunchDaemon 注册会保留，以便下次启动应用时按需恢复。
+</details>
+
+## 开发与构建
+
+项目使用 Swift 6、SwiftUI 和 Swift Package Manager。
+
+```bash
+git clone https://github.com/yc004/FastNET.git
+cd FastNET
+swift test
+```
+
+开发时可以使用 Xcode 打开 `Package.swift`。生成本地测试安装包：
 
 ```bash
 ./Scripts/package-app.sh
@@ -42,23 +156,29 @@ swift run FastNET
 ./Scripts/package-dmg.sh
 ```
 
-打包结果位于 `dist/FastNET.app`、`dist/Install-FastNET-<版本>.pkg` 和 `dist/FastNET-<版本>-macOS.dmg`。用户双击 DMG 中的安装包并完成一次原生管理员授权后，安装器会同时安装 FastNET、特权帮助程序及 LaunchDaemon。以后切换 IP 和 DNS 不再重复要求密码。
+构建产物位于 `dist/`：
 
-正式构建需要 Apple Developer ID Application 证书和 notarytool 钥匙串配置：
+| 文件 | 用途 |
+|---|---|
+| `FastNET.app` | 主应用开发构建 |
+| `Install-FastNET-<版本>.pkg` | 一次性管理员安装器 |
+| `FastNET-<版本>-macOS.dmg` | 面向用户的磁盘映像 |
 
-```shell
-FASTNET_CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
-FASTNET_INSTALLER_IDENTITY="Developer ID Installer: Your Name (TEAMID)" \
-FASTNET_NOTARY_PROFILE="FastNET" \
-./Scripts/package-dmg.sh
+## 项目结构
+
+```text
+FastNET
+├── Sources/FastNET          # SwiftUI 主应用、菜单栏与网络状态
+├── Sources/FastNETHelper    # 最小化特权 XPC 帮助程序
+├── Sources/FastNETShared    # 主应用与帮助程序共享协议
+├── Packaging                # Info.plist、LaunchDaemon 与安装脚本
+├── Scripts                  # App、PKG、DMG 构建工具
+└── Tests                    # 配置、解析、迁移与界面策略测试
 ```
 
-脚本会依次签名主应用、帮助程序、PKG 和 DMG，启用 Hardened Runtime，提交 Apple 公证并装订公证票据。未设置证书时会生成仅供本机测试的 ad-hoc 应用与未签名 PKG。
+---
 
-FastNET 通过一次性 PKG 将最小化的 LaunchDaemon 安装到系统目录，并使用经过调用方身份校验的 XPC 接口修改网络设置。帮助程序只接受预定义的网络配置请求，不执行任意命令。公开分发时仍应使用 Developer ID 签名并完成公证。
-
-## 隐私
-
-所有配置只保存在本机 `UserDefaults` 中。FastNET 不联网，也不会收集或上传网络信息。
-
-macOS 14 及更高版本要求应用取得位置服务授权后，CoreWLAN 才会返回当前 Wi‑Fi 名称。FastNET 只使用该权限读取 SSID，不请求定位坐标。权限设置跳转使用 [PermissionFlow](https://github.com/jaywcjlove/PermissionFlow) 中的 `SystemSettingsKit`。
+<div align="center">
+  <strong>FastNET</strong><br>
+  <sub>更少的网络设置，更多的顺畅连接。</sub>
+</div>
