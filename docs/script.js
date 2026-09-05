@@ -24,11 +24,25 @@ document.querySelectorAll('[data-year]').forEach((element) => {
 });
 
 if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
-  document.querySelectorAll('.nav, .feature-card, .security-card, .cta-card, .button-secondary').forEach((element) => {
+  document.querySelectorAll('.nav, .button, .status-chip, .eyebrow, .glass-label, .journey span, .mini-switcher, .tag-row span').forEach((element) => {
     element.addEventListener('pointermove', (event) => {
       const bounds = element.getBoundingClientRect();
-      element.style.setProperty('--mx', `${event.clientX - bounds.left}px`);
-      element.style.setProperty('--my', `${event.clientY - bounds.top}px`);
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+      const ratioX = x / bounds.width - 0.5;
+      const ratioY = y / bounds.height - 0.5;
+      element.style.setProperty('--gx', `${x}px`);
+      element.style.setProperty('--gy', `${y}px`);
+      element.style.setProperty('--glass-angle', `${135 + ratioX * 36}deg`);
+      element.style.setProperty('--glass-shift-x', `${ratioX * 9}px`);
+      element.style.setProperty('--glass-shift-y', `${ratioY * 7}px`);
+    }, { passive: true });
+    element.addEventListener('pointerleave', () => {
+      element.style.removeProperty('--gx');
+      element.style.removeProperty('--gy');
+      element.style.removeProperty('--glass-angle');
+      element.style.removeProperty('--glass-shift-x');
+      element.style.removeProperty('--glass-shift-y');
     }, { passive: true });
   });
 }
