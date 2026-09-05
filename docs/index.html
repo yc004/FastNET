@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f9ff">
+    <meta name="description" content="FastNET 是一款为 macOS 打造的轻量网络配置切换工具，让每个 Wi‑Fi 自动使用正确的 IP 与 DNS。">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="FastNET — 让每个 Wi‑Fi 都用对配置">
+    <meta property="og:description" content="按 Wi‑Fi 自动切换 DHCP、静态 IPv4 与 DNS。一次安装，日常切换无需重复输入密码。">
+    <meta property="og:image" content="https://yc004.github.io/FastNET/assets/og.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FastNET — 让每个 Wi‑Fi 都用对配置">
+    <meta name="twitter:description" content="轻量、原生、自动的 macOS 网络配置工具。">
+    <meta name="twitter:image" content="https://yc004.github.io/FastNET/assets/og.png">
+    <title>FastNET — 让每个 Wi‑Fi 都用对配置</title>
+    <link rel="icon" href="assets/app-icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <header class="site-header" data-header>
+      <nav class="nav shell" aria-label="主导航">
+        <a class="brand" href="#top" aria-label="FastNET 首页">
+          <img src="assets/app-icon.png" alt="" width="38" height="38">
+          <span>FastNET</span>
+        </a>
+        <div class="nav-links">
+          <a href="#features">功能</a>
+          <a href="#workflow">工作方式</a>
+          <a href="#security">安全</a>
+          <a href="https://github.com/yc004/FastNET" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+        <a class="button button-small" href="https://github.com/yc004/FastNET/releases/latest">免费下载</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero shell">
+        <div class="hero-copy reveal">
+          <div class="eyebrow"><span class="pulse"></span> 专为 macOS 26 打造</div>
+          <h1>换了 Wi‑Fi，<br><span>配置也该自动换。</span></h1>
+          <p class="hero-lede">FastNET 根据当前 Wi‑Fi，自动切换 DHCP、静态 IPv4 与 DNS。公司、家里、实验室，一次设置，之后安静工作。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/yc004/FastNET/releases/latest">
+              <span aria-hidden="true">↓</span> 下载最新版
+            </a>
+            <a class="button button-secondary" href="https://github.com/yc004/FastNET">查看源代码 <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="trust-row" aria-label="产品特性">
+            <span>✓ 原生 SwiftUI</span>
+            <span>✓ 配置仅存本机</span>
+            <span>✓ 免费开源</span>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-label="FastNET 应用界面预览">
+          <div class="halo"></div>
+          <div class="window-frame">
+            <div class="window-bar" aria-hidden="true">
+              <i class="red"></i><i class="yellow"></i><i class="green"></i>
+              <span>FastNET</span>
+            </div>
+            <img src="assets/configuration-window.png" alt="FastNET 三栏网络配置界面">
+          </div>
+          <div class="status-chip status-online"><i></i><span>公司 Wi‑Fi</span><b>配置已应用</b></div>
+          <div class="status-chip status-auto"><span class="bolt">ϟ</span><span>自动切换</span><b>已开启</b></div>
+        </div>
+      </section>
+
+      <section class="problem-strip">
+        <div class="shell problem-inner reveal">
+          <p>macOS 会让静态网络设置跟随网络服务，<strong>而不是每一个 Wi‑Fi。</strong></p>
+          <div class="journey" aria-label="FastNET 自动切换过程">
+            <span>公司 Wi‑Fi</span><i>→</i><span class="active">FastNET 自动匹配</span><i>→</i><span>正确的 IP 与 DNS</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell" id="features">
+        <div class="section-heading reveal">
+          <p class="kicker">少操作，多连接</p>
+          <h2>网络配置，本来就该这么简单。</h2>
+          <p>覆盖从自动识别到手动切换的完整流程，同时保持一款菜单栏工具应有的轻巧。</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card feature-primary reveal">
+            <div class="feature-icon">⌁</div>
+            <span class="feature-label">核心功能</span>
+            <h3>按 Wi‑Fi 自动切换</h3>
+            <p>网络变化时读取当前 SSID，立即匹配并应用指定配置，不再反复打开系统设置。</p>
+            <div class="mini-switcher" aria-hidden="true">
+              <div><span class="wifi-dot"></span><b>公司 Wi‑Fi</b><em>开发环境</em><i>已应用</i></div>
+              <div><span class="wifi-dot muted"></span><b>家庭 Wi‑Fi</b><em>DHCP</em></div>
+            </div>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">⌘</div>
+            <h3>一个网络，多套方案</h3>
+            <p>为同一个 SSID 保存开发、测试或备用 DNS 配置；指定一套自动应用，其他配置随时手动切换。</p>
+            <div class="tag-row" aria-hidden="true"><span>开发环境</span><span>测试网段</span><span>DHCP</span></div>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">◎</div>
+            <h3>IPv4 与 DNS 一起管</h3>
+            <p>支持 DHCP、静态 IP、子网掩码、路由器与多个 DNS，还能在手动 DNS 后自动附加默认地址。</p>
+            <div class="code-lines" aria-hidden="true"><span>IPv4&nbsp;&nbsp; 10.20.30.42</span><span>DNS&nbsp;&nbsp;&nbsp; 1.1.1.1 · 默认 DNS</span></div>
+          </article>
+
+          <article class="feature-card feature-image reveal">
+            <div class="copy">
+              <div class="feature-icon">↔</div>
+              <h3>状态清楚，反馈及时</h3>
+              <p>从菜单栏快速查看状态。自动切换时，原生消息气泡会告诉你正在应用哪一套配置。</p>
+            </div>
+            <img src="assets/menu-bar-notification.png" alt="FastNET 菜单栏自动切换消息气泡">
+          </article>
+        </div>
+      </section>
+
+      <section class="section workflow-section" id="workflow">
+        <div class="shell">
+          <div class="section-heading reveal">
+            <p class="kicker">三步完成</p>
+            <h2>设置一次，自动运行。</h2>
+          </div>
+          <div class="steps">
+            <article class="step reveal"><span>01</span><div><h3>安装</h3><p>通过原生 PKG 完成一次管理员授权，部署功能受限的系统帮助程序。</p></div></article>
+            <article class="step reveal"><span>02</span><div><h3>配置</h3><p>选择 Wi‑Fi，填写 IP 与 DNS，并指定连接后自动应用的配置。</p></div></article>
+            <article class="step reveal"><span>03</span><div><h3>忘掉它</h3><p>FastNET 在网络变化时安静完成切换，成功或失败都会给出明确反馈。</p></div></article>
+          </div>
+          <div class="onboarding-showcase reveal">
+            <div class="onboarding-copy">
+              <span class="glass-label">原生首次启动体验</span>
+              <h3>权限为什么需要，状态是否就绪，一眼看懂。</h3>
+              <p>首次打开时集中完成 Wi‑Fi 名称权限与帮助程序检查。授权完成后，界面会自动更新，不需要来回确认。</p>
+            </div>
+            <div class="onboarding-image"><img src="assets/permission-onboarding.png" alt="FastNET 首次启动权限引导"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell security" id="security">
+        <div class="security-card reveal">
+          <div class="lock-orbit" aria-hidden="true"><span>⌑</span></div>
+          <div class="security-copy">
+            <p class="kicker">隐私与安全</p>
+            <h2>你的网络配置，只留在这台 Mac。</h2>
+            <p>FastNET 不创建账户、不上传配置，也不包含遥测服务。位置权限仅用于读取当前 Wi‑Fi 名称，不读取定位坐标。</p>
+          </div>
+          <ul>
+            <li><i>✓</i><span><b>本地保存</b><small>配置存储于本机</small></span></li>
+            <li><i>✓</i><span><b>最小权限</b><small>帮助程序仅接受预定义请求</small></span></li>
+            <li><i>✓</i><span><b>开源透明</b><small>实现细节可以完整审阅</small></span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section shell faq-section">
+        <div class="section-heading reveal">
+          <p class="kicker">常见问题</p>
+          <h2>开始前，你可能还想知道。</h2>
+        </div>
+        <div class="faq-list reveal">
+          <details><summary>为什么读取 Wi‑Fi 名称需要位置权限？<span>＋</span></summary><p>macOS 要求应用获得位置服务授权后，CoreWLAN 才会返回当前 Wi‑Fi 名称。FastNET 只读取 SSID，不读取或保存定位坐标。</p></details>
+          <details><summary>为什么安装时需要管理员授权？<span>＋</span></summary><p>修改系统网络设置需要增强权限。安装器会一次性部署功能受限的帮助程序，因此日常切换不必反复输入密码。</p></details>
+          <details><summary>退出 FastNET 后帮助程序还会运行吗？<span>＋</span></summary><p>不会。正常退出 FastNET 时，帮助程序会同步结束；下次启动应用时再按需恢复。</p></details>
+          <details><summary>支持哪些 Mac？<span>＋</span></summary><p>当前版本需要 macOS 26 或更高版本，并面向 Apple Silicon Mac 构建。</p></details>
+        </div>
+      </section>
+
+      <section class="cta-section shell reveal">
+        <div class="cta-card">
+          <img src="assets/app-icon.png" alt="FastNET 图标" width="104" height="104">
+          <p class="kicker">FastNET</p>
+          <h2>从下一次连接开始，<br>不用再改网络设置。</h2>
+          <p>免费、开源，为 macOS 26 及更高版本打造。</p>
+          <a class="button button-primary" href="https://github.com/yc004/FastNET/releases/latest"><span aria-hidden="true">↓</span> 下载最新版</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell footer-inner">
+        <a class="brand" href="#top"><img src="assets/app-icon.png" alt="" width="32" height="32"><span>FastNET</span></a>
+        <p>更少的网络设置，更多的顺畅连接。</p>
+        <div><a href="https://github.com/yc004/FastNET">GitHub</a><a href="https://github.com/yc004/FastNET/releases">Releases</a><span>© <span data-year></span></span></div>
+      </div>
+    </footer>
+  </body>
+</html>

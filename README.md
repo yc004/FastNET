@@ -11,7 +11,7 @@
   [![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)](Package.swift)
   [![Release](https://img.shields.io/github/v/release/yc004/FastNET?display_name=tag&sort=semver)](https://github.com/yc004/FastNET/releases/latest)
 
-  [下载最新版](https://github.com/yc004/FastNET/releases/latest) · [查看功能](#核心体验) · [开发与构建](#开发与构建)
+  [访问产品官网](https://yc004.github.io/FastNET/) · [下载最新版](https://github.com/yc004/FastNET/releases/latest) · [查看功能](#核心体验) · [开发与构建](#开发与构建)
 </div>
 
 ---
