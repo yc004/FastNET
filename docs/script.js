@@ -22,3 +22,13 @@ if (reduceMotion || !('IntersectionObserver' in window)) {
 document.querySelectorAll('[data-year]').forEach((element) => {
   element.textContent = new Date().getFullYear();
 });
+
+if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
+  document.querySelectorAll('.nav, .feature-card, .security-card, .cta-card, .button-secondary').forEach((element) => {
+    element.addEventListener('pointermove', (event) => {
+      const bounds = element.getBoundingClientRect();
+      element.style.setProperty('--mx', `${event.clientX - bounds.left}px`);
+      element.style.setProperty('--my', `${event.clientY - bounds.top}px`);
+    }, { passive: true });
+  });
+}
