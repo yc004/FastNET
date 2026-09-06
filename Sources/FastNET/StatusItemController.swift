@@ -85,13 +85,15 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             let parent = NSMenuItem(title: "应用配置", action: nil, keyEquivalent: "")
             let submenu = NSMenu(title: "应用配置")
             for profile in profiles {
-                let item = actionItem(
-                    profile.displayName,
-                    symbol: profile.isAutoApply ? FastNETSymbol.automatic : FastNETSymbol.profile,
-                    action: #selector(applyProfile(_:))
-                )
+                let item = actionItem(profile.displayName, action: #selector(applyProfile(_:)))
                 item.representedObject = profile.id.uuidString
                 item.isEnabled = network.applyState != .applying
+                item.state = Self.isCurrentlyApplied(
+                    profileID: profile.id,
+                    profileSSID: profile.ssid,
+                    currentSSID: snapshot.ssid,
+                    lastAppliedProfileID: network.lastAppliedProfileID
+                ) ? .on : .off
                 submenu.addItem(item)
             }
             parent.submenu = submenu
@@ -145,6 +147,15 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         item.target = self
         if let symbol { item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil) }
         return item
+    }
+
+    nonisolated static func isCurrentlyApplied(
+        profileID: UUID,
+        profileSSID: String,
+        currentSSID: String?,
+        lastAppliedProfileID: UUID?
+    ) -> Bool {
+        profileID == lastAppliedProfileID && profileSSID == currentSSID
     }
 
     @objc private func applyProfile(_ sender: NSMenuItem) {

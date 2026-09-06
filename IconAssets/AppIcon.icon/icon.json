@@ -1,0 +1,95 @@
+{
+  "features" : [
+    "refractivity"
+  ],
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "03-wifi 2.svg",
+          "name" : "Wi-Fi",
+          "position" : {
+            "scale" : 0.91,
+            "translation-in-points" : [
+              0,
+              -65.6015625
+            ]
+          }
+        }
+      ],
+      "name" : "Wi-Fi Glass",
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : true,
+        "strength" : 0.5
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.6
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "04-switch-arrows 2.svg",
+          "name" : "Switch Arrows",
+          "position" : {
+            "scale" : 0.62,
+            "translation-in-points" : [
+              0,
+              100.6015625
+            ]
+          }
+        }
+      ],
+      "name" : "Switch Glass",
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : true,
+        "strength" : 0.5
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.6
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "02-color-field.svg",
+          "name" : "Color Field"
+        },
+        {
+          "image-name" : "01-background.svg",
+          "name" : "Background"
+        }
+      ],
+      "name" : "Base Color",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.6
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

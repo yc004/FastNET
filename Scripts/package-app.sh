@@ -5,6 +5,7 @@ PROJECT_ROOT="${0:A:h:h}"
 APP_PATH="$PROJECT_ROOT/dist/FastNET.app"
 PRODUCTS_PATH="$PROJECT_ROOT/.build/out/Products/Release"
 ASSET_OUTPUT="$PROJECT_ROOT/.build/app-icon-output"
+ICON_COMPOSER_DOCUMENT="$PROJECT_ROOT/IconAssets/AppIcon.icon"
 DEVELOPER_ROOT="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}"
 SIGNING_IDENTITY="${FASTNET_CODESIGN_IDENTITY:--}"
 
@@ -38,6 +39,7 @@ done
 
 DEVELOPER_DIR="$DEVELOPER_ROOT" /usr/bin/xcrun actool \
     "$PROJECT_ROOT/Packaging/Assets.xcassets" \
+    "$ICON_COMPOSER_DOCUMENT" \
     --compile "$ASSET_OUTPUT" \
     --platform macosx \
     --minimum-deployment-target 26.0 \
@@ -45,6 +47,7 @@ DEVELOPER_DIR="$DEVELOPER_ROOT" /usr/bin/xcrun actool \
     --output-partial-info-plist "$ASSET_OUTPUT/asset-info.plist"
 
 /usr/bin/ditto "$ASSET_OUTPUT/AppIcon.icns" "$APP_PATH/Contents/Resources/AppIcon.icns"
+/usr/bin/ditto "$ASSET_OUTPUT/Assets.car" "$APP_PATH/Contents/Resources/Assets.car"
 if [[ "$SIGNING_IDENTITY" == "-" ]]; then
     print -u2 "Warning: creating an ad-hoc signed local development build."
     /usr/bin/codesign --force --sign - \

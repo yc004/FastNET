@@ -8,12 +8,14 @@ FastNET 采用原生 macOS 菜单栏工具的视觉语言：系统字体、SF Sy
 - **双向箭头**：代表在不同网络配置之间自动切换。
 - **深蓝与青色**：表达网络连接、稳定和系统工具属性。
 - **白色主符号**：确保在小尺寸下仍有清晰轮廓。
-- **全出血底图**：AppIcon 源图不预先绘制透明圆角、边框或外部阴影，由 macOS 统一施加系统圆角蒙版，避免 Finder 再添加旧式图标底板。
+- **系统分层图标**：AppIcon 使用 Icon Composer 文档交付，背景色场、Wi‑Fi 与切换箭头保持独立，由 macOS 26 统一施加圆角、折射、高光与阴影。
 
 资源：
 
-- `Sources/FastNET/Resources/FastNET-AppIcon-Master.png`：1254 × 1254 原始图。
-- `Sources/FastNET/Resources/AppIcon.iconset/`：16、32、128、256、512 和 Retina 尺寸。
+- `IconAssets/AppIcon.icon`：macOS 26 的原生分层图标；`Wi-Fi Glass` 与 `Switch Glass` 是独立玻璃组。
+- `IconAssets/Layers/`：可继续编辑的 1024 × 1024 SVG 源图层。
+- `Sources/FastNET/Resources/FastNET-AppIcon-Master.png`：由 Icon Composer 导出的 1024 × 1024 兼容预览。
+- `Sources/FastNET/Resources/AppIcon.iconset/`：供 Finder、DMG 等兼容路径使用的 16、32、128、256、512 和 Retina 尺寸。
 
 ## 菜单栏图标
 

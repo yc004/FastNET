@@ -26,7 +26,10 @@ struct NativeMenuContent: View {
                     } label: {
                         Label(
                             profile.displayName,
-                            systemImage: profile.isAutoApply ? FastNETSymbol.automatic : FastNETSymbol.profile
+                            systemImage: network.lastAppliedProfileID == profile.id
+                                && network.snapshot.ssid == profile.ssid
+                                ? "checkmark"
+                                : (profile.isAutoApply ? FastNETSymbol.automatic : FastNETSymbol.profile)
                         )
                     }
                     .disabled(network.applyState == .applying)

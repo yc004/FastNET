@@ -127,6 +127,28 @@ import FastNETShared
     #expect(NSImage(systemSymbolName: FastNETSymbol.menuBarDisconnected, accessibilityDescription: nil) != nil)
 }
 
+@Test func menuMarksOnlyTheAppliedProfileOnTheCurrentWiFi() {
+    let appliedID = UUID()
+    #expect(StatusItemController.isCurrentlyApplied(
+        profileID: appliedID,
+        profileSSID: "Office",
+        currentSSID: "Office",
+        lastAppliedProfileID: appliedID
+    ))
+    #expect(!StatusItemController.isCurrentlyApplied(
+        profileID: UUID(),
+        profileSSID: "Office",
+        currentSSID: "Office",
+        lastAppliedProfileID: appliedID
+    ))
+    #expect(!StatusItemController.isCurrentlyApplied(
+        profileID: appliedID,
+        profileSSID: "Office",
+        currentSSID: "Home",
+        lastAppliedProfileID: appliedID
+    ))
+}
+
 @Test func parsesCurrentNetworkDetails() {
     let output = """
     DHCP Configuration
