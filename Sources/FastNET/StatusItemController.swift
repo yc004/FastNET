@@ -191,8 +191,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     @objc private func showAbout(_ sender: NSMenuItem) {
-        NSApplication.shared.orderFrontStandardAboutPanel(nil)
-        NSApplication.shared.activate(ignoringOtherApps: true)
+        AboutWindowController.shared.show()
     }
 
     @objc private func quit(_ sender: NSMenuItem) {

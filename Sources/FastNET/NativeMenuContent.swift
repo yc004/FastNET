@@ -79,8 +79,7 @@ struct NativeMenuContent: View {
         Divider()
 
         Button("关于 FastNET") {
-            NSApplication.shared.orderFrontStandardAboutPanel(nil)
-            NSApplication.shared.activate(ignoringOtherApps: true)
+            AboutWindowController.shared.show()
         }
 
         Button("退出 FastNET") {

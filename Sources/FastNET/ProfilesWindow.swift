@@ -603,6 +603,7 @@ private struct AnimatedFeedbackRow<Trigger: Equatable>: View {
 
 struct SettingsView: View {
     @EnvironmentObject private var store: ProfileStore
+
     var body: some View {
         Form {
             Toggle("连接 Wi‑Fi 后自动切换网络配置", isOn: $store.autoSwitchEnabled)

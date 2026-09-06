@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         DockIconController.shared.apply()
         StatusItemController.shared.install()
+        UpdateService.shared.start()
         Task { @MainActor [weak self] in
             await PrivilegeServiceManager.shared.prepareForLaunch()
             let hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenPermissionOnboarding.v2")
@@ -27,6 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        UpdateService.shared.stop()
         PrivilegeServiceManager.shared.stopHelper()
     }
 
@@ -95,6 +97,13 @@ struct FastNETApp: App {
         }
         .defaultSize(width: 1040, height: 650)
         .windowResizability(.contentMinSize)
+        .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("关于 FastNET") {
+                    AboutWindowController.shared.show()
+                }
+            }
+        }
 
         Settings {
             SettingsView()

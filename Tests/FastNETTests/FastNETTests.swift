@@ -149,6 +149,34 @@ import FastNETShared
     ))
 }
 
+@Test func comparesReleaseVersionsNumerically() {
+    #expect(VersionComparison.isNewer("v1.9.0", than: "1.8.0"))
+    #expect(VersionComparison.isNewer("1.10.0", than: "1.9.9"))
+    #expect(!VersionComparison.isNewer("1.8.0", than: "1.8.0"))
+    #expect(!VersionComparison.isNewer("1.7.9", than: "1.8.0"))
+}
+
+@Test func decodesGitHubReleaseAndFindsTheDMG() throws {
+    let payload = """
+    {
+      "tag_name": "v1.9.0",
+      "name": "FastNET 1.9.0",
+      "body": "更新说明",
+      "html_url": "https://github.com/yc004/FastNET/releases/tag/v1.9.0",
+      "assets": [
+        {
+          "name": "FastNET-1.9.0-macOS.dmg",
+          "browser_download_url": "https://example.com/FastNET-1.9.0-macOS.dmg",
+          "size": 4096
+        }
+      ]
+    }
+    """.data(using: .utf8)!
+    let release = try JSONDecoder().decode(FastNETRelease.self, from: payload)
+    #expect(release.version == "1.9.0")
+    #expect(release.diskImage?.name == "FastNET-1.9.0-macOS.dmg")
+}
+
 @Test func parsesCurrentNetworkDetails() {
     let output = """
     DHCP Configuration
